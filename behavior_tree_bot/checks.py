@@ -1,31 +1,11 @@
 
-# if there are still neutral planets return true, else false
+
 def if_neutral_planet_available(state):
     return any(state.neutral_planets())
 
-# if the player bot has the largest fleet return true, else false
+
 def have_largest_fleet(state):
     return sum(planet.num_ships for planet in state.my_planets()) \
              + sum(fleet.num_ships for fleet in state.my_fleets()) \
            > sum(planet.num_ships for planet in state.enemy_planets()) \
              + sum(fleet.num_ships for fleet in state.enemy_fleets())
-
-# if the enemy bot has more ships than the player bot return true, else false
-def not_have_largest_fleet(state):
-    return sum(planet.num_ships for planet in state.my_planets()) \
-             + sum(fleet.num_ships for fleet in state.my_fleets()) \
-           <= sum(planet.num_ships for planet in state.enemy_planets()) \
-             + sum(fleet.num_ships for fleet in state.enemy_fleets())
-
-# if either the player bot or the enemy bot owns more than half the map return true, else return false
-def half_planets_owned(state):
-    my_planets = [planet for planet in state.my_planets()]
-    neutral_planets = [planet for planet in state.neutral_planets()]
-    enemy_planets = [planet for planet in state.enemy_planets()]
-    total_planet_amount = len(my_planets) + len(neutral_planets) + len(enemy_planets)
-    
-    # determine if half are owned by a player or enemy
-    if (len(my_planets) >= total_planet_amount / 2 or len(enemy_planets) >= total_planet_amount / 2)):
-        return True
-    else:
-        return False

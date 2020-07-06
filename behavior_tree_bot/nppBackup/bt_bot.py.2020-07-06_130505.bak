@@ -31,18 +31,12 @@ def setup_behavior_tree():
     spread_action = Action(spread_to_weakest_neutral_planet)
     spread_sequence.child_nodes = [neutral_planet_check, spread_action]
     
-    # works, fails when adding to root nodes
-    spread_production = Sequence(name='Spread Production Strategy')
-    neutral_planet_check_prod = Check(if_neutral_planet_available)
-    spread__production_action = Action(spread_production)
-    spread_production.child_nodes = [neutral_planet_check_prod, spread__production_action]
-    
     offensive_plan = Sequence(name='Offensive Strategy')
     largest_fleet_check = Check(have_largest_fleet)
     attack = Action(attack_weakest_enemy_planet)
     offensive_plan.child_nodes = [largest_fleet_check, attack]
 
-    root.child_nodes = [spread_sequence, offensive_plan, attack.copy()]
+    root.child_nodes = [offensive_plan, spread_sequence, attack.copy()]
 
     logging.info('\n' + root.tree_to_string())
     return root
