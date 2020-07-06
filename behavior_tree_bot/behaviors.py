@@ -2,26 +2,80 @@ import sys
 sys.path.insert(0, '../')
 from planet_wars import issue_order
 
+# spread - attack weakest neutral planet
+# from spread_bot
+def spread(state):
+    my_planets = iter(sorted(state.my_planets(), key=lambda p: p.num_ships, reverse=True))
 
-def attack_weakest_enemy_planet(state):
-    # (1) If we currently have a fleet in flight, abort plan.
-    #if len(state.my_fleets()) >= 1:
-        #return False
+    neutral_planets = [planet for planet in state.neutral_planets()
+                      if not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets())]
+    neutral_planets.sort(key=lambda p: p.num_ships)
 
-    # (2) Find my strongest planet.
-    #strongest_planet = max(state.my_planets(), key=lambda t: t.num_ships, default=None)
+    target_planets = iter(neutral_planets)
 
-    # (3) Find the weakest enemy planet.
-    #weakest_planet = min(state.enemy_planets(), key=lambda t: t.num_ships, default=None)
+    enemy_planets = sorted(state.enemy_planets(), key=lambda p: p.num_ships, reverse=True)
 
-   # if not strongest_planet or not weakest_planet:
-        # No legal source or destination
-        #return False
-    #else:
-        # (4) Send half the ships from my strongest planet to the weakest enemy planet.
-        #return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
-        
-        
+    try:
+        my_planet = next(my_planets)
+        target_planet = next(target_planets)
+        while True:
+            required_ships = target_planet.num_ships + 1
+
+            if my_planet.num_ships > required_ship:
+                issue_order(state, my_planet.ID, target_planet.ID, required_ships)
+                my_planet = next(my_planets)
+                target_planet = next(target_planets)
+            else:
+                my_planet = next(my_planets)
+
+    except StopIteration:
+        return
+
+# defend - defend weakest planets
+# from defensive_bot
+def defend(state):
+    my_planets = [planet for planet in state.my_planets()]
+    if not my_planets:
+        return
+
+    def strength(p):
+        return p.num_ships \
+               + sum(fleet.num_ships for fleet in state.my_fleets() if fleet.destination_planet == p.ID) \
+               - sum(fleet.num_ships for fleet in state.enemy_fleets() if fleet.destination_planet == p.ID)
+
+    avg = sum(strength(planet) for planet in my_planets) / len(my_planets)
+
+    weak_planets = [planet for planet in my_planets if strength(planet) < avg]
+    strong_planets = [planet for planet in my_planets if strength(planet) > avg]
+
+    if (not weak_planets) or (not strong_planets):
+        return
+
+    weak_planets = iter(sorted(weak_planets, key=strength))
+    strong_planets = iter(sorted(strong_planets, key=strength, reverse=True))
+
+    try:
+        weak_planet = next(weak_planets)
+        strong_planet = next(strong_planets)
+        while True:
+            need = int(avg - strength(weak_planet))
+            have = int(strength(strong_planet) - avg)
+
+            if have >= need > 0:
+                issue_order(state, strong_planet.ID, weak_planet.ID, need)
+                weak_planet = next(weak_planets)
+            elif have > 0:
+                issue_order(state, strong_planet.ID, weak_planet.ID, have)
+                strong_planet = next(strong_planets)
+            else:
+                strong_planet = next(strong_planets)
+
+    except StopIteration:
+        return
+
+# attack - attack until opponent is defeated
+# from aggressive_bot
+def attack(state):  
     my_planets = iter(sorted(state.my_planets(), key=lambda p: p.num_ships))
 
     enemy_planets = [planet for planet in state.enemy_planets()
@@ -38,60 +92,6 @@ def attack_weakest_enemy_planet(state):
                                  state.distance(my_planet.ID, target_planet.ID) * target_planet.growth_rate + 1
 
             if my_planet.num_ships > required_ships:
-                issue_order(state, my_planet.ID, target_planet.ID, required_ships)
-                my_planet = next(my_planets)
-                target_planet = next(target_planets)
-            else:
-                my_planet = next(my_planets)
-
-    except StopIteration:
-        return
-
-
-def spread_to_weakest_neutral_planet(state):
-    # (1) If we currently have a fleet in flight, just do nothing.
-    #if len(state.my_fleets()) >= 1:
-        #return False
-
-    # (2) Find my strongest planet.
-    #strongest_planet = max(state.my_planets(), key=lambda p: p.num_ships, default=None)
-
-    # (3) Find the weakest neutral planet.
-    #weakest_planet = min(state.neutral_planets(), key=lambda p: p.num_ships, default=None)
-
-    #if not strongest_planet or not weakest_planet:
-        # No legal source or destination
-        #return False
-    #else:
-        # (4) Send half the ships from my strongest planet to the weakest enemy planet.
-        #return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
-        
-        
-    my_planets = iter(sorted(state.my_planets(), key=lambda p: p.num_ships, reverse=True))
-
-    neutral_planets = [planet for planet in state.neutral_planets()
-                      if not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets())]
-    neutral_planets.sort(key=lambda p: p.num_ships)
-
-    target_planets = iter(neutral_planets)
-
-    enemy_planets = sorted(state.enemy_planets(), key=lambda p: p.num_ships, reverse=True)
-
-    try:
-        my_planet = next(my_planets)
-        target_planet = next(target_planets)
-        distance = []
-        if enemy_planets:
-            for enemy in enemy_planets:
-                distance.append(state.distance(target_planet.ID, enemy.ID))
-
-            shortest_distance = min(distance)
-        else:
-            shortest_distance = 999999
-        while True:
-            required_ships = target_planet.num_ships + 1
-
-            if my_planet.num_ships > required_ships and state.distance(my_planet.ID, target_planet.ID) < shortest_distance:
                 issue_order(state, my_planet.ID, target_planet.ID, required_ships)
                 my_planet = next(my_planets)
                 target_planet = next(target_planets)

@@ -1,0 +1,24 @@
+
+
+def if_neutral_planet_available(state):
+    return any(state.neutral_planets())
+
+
+def have_largest_fleet(state):
+    return sum(planet.num_ships for planet in state.my_planets()) \
+             + sum(fleet.num_ships for fleet in state.my_fleets()) \
+           > sum(planet.num_ships for planet in state.enemy_planets()) \
+             + sum(fleet.num_ships for fleet in state.enemy_fleets())
+
+def not_have_largest_fleet(state):
+    return sum(planet.num_ships for planet in state.my_planets()) \
+             + sum(fleet.num_ships for fleet in state.my_fleets()) \
+           <= sum(planet.num_ships for planet in state.enemy_planets()) \
+             + sum(fleet.num_ships for fleet in state.enemy_fleets())
+
+def half_planets_owned(state):
+    my_planets = [planet for planet in state.my_planets()]
+    neutral_planets = [planet for planet in state.neutral_planets()]
+    enemy_planets = [planet for planet in state.enemy_planets()]
+    total_planet_amount = len(my_planets) + len(neutral_planets) + len(enemy_planets)
+    
