@@ -72,22 +72,26 @@ def spread_production(state):
 
     target_planets = [planet for planet in state.not_my_planets()
                       if not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets())]
-    target_planets = iter(sorted(target_planets, key=lambda p: p.num_ships, reverse=True))
+    target_planets_fallback = iter(sorted(target_planets, key=lambda p: p.num_ships, reverse=True))
 
     try:
         my_planet = next(my_planets)
-        target_planet = next(target_planets)
+        #target_planet = next(target_planets)
         target_to_distance = {}             #Dictionary mapping targets to closest distance
         ally_to_target = {}                 #Dictionary mapping allies to their closest targets
+        print("Target planets:" + str(target_planets))
         for ally in state.my_planets():
             closest_distance = 99999
-            for target in state.not_my_planets():
+            for target in target_planets:
                 ally_to_target_distance = state.distance(ally.ID,target.ID)
                 if ally not in ally_to_target or ally_to_target_distance < closest_distance:
                     ally_to_target[ally] = target
                     closest_distance = ally_to_target_distance
 
-        target_planet = ally_to_target[my_planet]       
+        if my_planet in ally_to_target:
+            target_planet = ally_to_target[my_planet]   
+        else:
+            target_planet = next(target_planets_fallback)    
         while True:
             if target_planet.owner == 0:
                 required_ships = target_planet.num_ships + 1
@@ -98,9 +102,10 @@ def spread_production(state):
             if my_planet.num_ships > required_ships:
                 issue_order(state, my_planet.ID, target_planet.ID, required_ships)
                 my_planet = next(my_planets)
-                target_planet = next(target_planets)
+                #target_planet = next(target_planets)
             else:
-                target_planet = next(target_planets)
+                #target_planet = next(target_planets)
+                break
 
     except StopIteration:
         return
