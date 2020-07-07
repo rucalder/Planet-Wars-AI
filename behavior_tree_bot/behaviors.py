@@ -72,7 +72,7 @@ def spread_production(state):
 
     target_planets = [planet for planet in state.not_my_planets()
                       if not any(fleet.destination_planet == planet.ID for fleet in state.my_fleets())]
-    target_planets_fallback = iter(sorted(target_planets, key=lambda p: p.num_ships, reverse=True))
+    target_planets_fallback = iter(sorted(target_planets, key=lambda p: p.num_ships))
 
     try:
         my_planet = next(my_planets)
@@ -99,7 +99,7 @@ def spread_production(state):
                 required_ships = target_planet.num_ships + \
                                  state.distance(my_planet.ID, target_planet.ID) * target_planet.growth_rate + 1
 
-            if my_planet.num_ships > required_ships:
+            if my_planet.num_ships > required_ships: #and not any(fleet.destination_planet == my_planet.ID for fleet in state.enemy_fleets()):
                 issue_order(state, my_planet.ID, target_planet.ID, required_ships)
                 my_planet = next(my_planets)
                 #target_planet = next(target_planets)
@@ -151,3 +151,21 @@ def defend(state):
     except StopIteration:
         return
         
+def defend2(state):
+    my_planets = [planet for planet in state.my_planets()]
+    if not my_planets:
+        return
+
+    for planet in my_planets:
+        for fleet in state.enemy_fleets():
+            if fleet.destination_planet == planet.ID:
+                if planet.num_ships + state.distance(planet.ID, fleet.source_planet)*planet.growth_rate < fleet.num_ships:
+                    closest_ally = None
+                    distance = 99999
+                    for close in my_planets:
+                        if state.distance(close.ID, planet.ID) < distance:
+                            distance = state.distance(close.ID, planet.ID)
+                            closest_ally = close
+                    issue_order(state, closest_ally.ID, planet.ID, closest_ally.num_ships / 2)
+
+    return

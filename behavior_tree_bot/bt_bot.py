@@ -41,9 +41,9 @@ def setup_behavior_tree():
     spread_production_sequence.child_nodes = [neutral_planet_check, spread_production_sequence_action]
     
     defend_sequence = Sequence(name='Defend Strategy')
-    lesser_armada_check = Check(have_smallest_fleet)
-    defend_action = Action(defend)
-    defend_sequence.child_nodes = [lesser_armada_check, defend_action]
+    enemy_attacks_check = Check(enemy_attacks)
+    defend_action = Action(defend2)
+    defend_sequence.child_nodes = [enemy_attacks_check, defend_action]
     
     offensive_plan = Sequence(name='Offensive Strategy')
     largest_fleet_check = Check(have_largest_fleet)

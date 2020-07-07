@@ -54,13 +54,13 @@ def test(bot, opponent_bot, map_num):
 
 if __name__ == '__main__':
     path =  os.getcwd()
-    opponents = ['opponent_bots/easy_bot.py',
+    opponents = ['opponent_bots/spread_bot.py',
                  'opponent_bots/spread_bot.py',
-                 'opponent_bots/aggressive_bot.py',
-                 'opponent_bots/defensive_bot.py',
-                 'opponent_bots/production_bot.py']
+                 'opponent_bots/spread_bot.py',
+                 'opponent_bots/spread_bot.py',
+                 'opponent_bots/spread_bot.py']
 
-    maps = [69, 12, 29, 99, 18]
+    maps = [1, 2, 3, 4, 5]
 
     my_bot = 'behavior_tree_bot/bt_bot.py'
     show = len(sys.argv) < 2 or sys.argv[1] == "show"
