@@ -60,7 +60,7 @@ if __name__ == '__main__':
                  'opponent_bots/defensive_bot.py',
                  'opponent_bots/production_bot.py']
 
-    maps = [1, 2, 3, 4, 5]
+    maps = [16, 17, 18, 19, 20]
 
     my_bot = 'behavior_tree_bot/bt_bot.py'
     show = len(sys.argv) < 2 or sys.argv[1] == "show"

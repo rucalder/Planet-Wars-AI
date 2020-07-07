@@ -42,17 +42,6 @@ def spread_to_weakest_neutral_planet(state):
     try:
         my_planet = next(my_planets)
         target_planet = next(target_planets)
-        target_to_distance = {}             #Dictionary mapping targets to closest distance
-        ally_to_target = {}                 #Dictionary mapping allies to their closest targets
-        for ally in state.my_planets():
-            closest_distance = 99999
-            for target in state.not_my_planets():
-                ally_to_target_distance = state.distance(ally.ID,target.ID)
-                if ally not in ally_to_target or ally_to_target_distance < closest_distance:
-                    ally_to_target[ally] = target
-                    closest_distance = ally_to_target_distance
-
-        target_planet = ally_to_target[my_planet]       
         while True:
             required_ships = target_planet.num_ships + 1
 
@@ -77,17 +66,6 @@ def spread_production(state):
     try:
         my_planet = next(my_planets)
         target_planet = next(target_planets)
-        target_to_distance = {}             #Dictionary mapping targets to closest distance
-        ally_to_target = {}                 #Dictionary mapping allies to their closest targets
-        for ally in state.my_planets():
-            closest_distance = 99999
-            for target in state.not_my_planets():
-                ally_to_target_distance = state.distance(ally.ID,target.ID)
-                if ally not in ally_to_target or ally_to_target_distance < closest_distance:
-                    ally_to_target[ally] = target
-                    closest_distance = ally_to_target_distance
-
-        target_planet = ally_to_target[my_planet]       
         while True:
             if target_planet.owner == 0:
                 required_ships = target_planet.num_ships + 1
@@ -104,45 +82,3 @@ def spread_production(state):
 
     except StopIteration:
         return
-
-# defend - from densive_bot        
-def defend(state):
-    my_planets = [planet for planet in state.my_planets()]
-    if not my_planets:
-        return
-
-    def strength(p):
-        return p.num_ships \
-               + sum(fleet.num_ships for fleet in state.my_fleets() if fleet.destination_planet == p.ID) \
-               - sum(fleet.num_ships for fleet in state.enemy_fleets() if fleet.destination_planet == p.ID)
-
-    avg = sum(strength(planet) for planet in my_planets) / len(my_planets)
-
-    weak_planets = [planet for planet in my_planets if strength(planet) < avg]
-    strong_planets = [planet for planet in my_planets if strength(planet) > avg]
-
-    if (not weak_planets) or (not strong_planets):
-        return
-
-    weak_planets = iter(sorted(weak_planets, key=strength))
-    strong_planets = iter(sorted(strong_planets, key=strength, reverse=True))
-
-    try:
-        weak_planet = next(weak_planets)
-        strong_planet = next(strong_planets)
-        while True:
-            need = int(avg - strength(weak_planet))
-            have = int(strength(strong_planet) - avg)
-
-            if have >= need > 0:
-                issue_order(state, strong_planet.ID, weak_planet.ID, need)
-                weak_planet = next(weak_planets)
-            elif have > 0:
-                issue_order(state, strong_planet.ID, weak_planet.ID, have)
-                strong_planet = next(strong_planets)
-            else:
-                strong_planet = next(strong_planets)
-
-    except StopIteration:
-        return
-        

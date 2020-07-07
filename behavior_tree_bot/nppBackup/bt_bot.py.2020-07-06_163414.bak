@@ -24,36 +24,25 @@ def setup_behavior_tree():
 
     # Top-down construction of behavior tree
     root = Selector(name='High Level Ordering of Strategies')
-    
-    # sequence = Sequence(name)
-    # check(s) = Check(name_of_check) - takes boolean
-    # action = Action(name_of_behavior) - do something
-    # sequence.child_nodes = [check(s), action(s)]
 
-    #spread_sequence = Sequence(name='Spread Strategy')
-    #neutral_planet_check = Check(if_neutral_planet_available)
-    #spread_action = Action(spread_to_weakest_neutral_planet)
-    #spread_sequence.child_nodes = [neutral_planet_check, spread_action]
-    
-    spread_production_sequence = Sequence(name='Spread Production Strategy')
+
+    spread_sequence = Sequence(name='Spread Strategy')
     neutral_planet_check = Check(if_neutral_planet_available)
-    spread_production_sequence_action = Action(spread_production)
-    spread_production_sequence.child_nodes = [neutral_planet_check, spread_production_sequence_action]
+    spread_action = Action(spread_to_weakest_neutral_planet)
+    spread_sequence.child_nodes = [neutral_planet_check, spread_action]
     
-    defend_sequence = Sequence(name='Defend Strategy')
-    lesser_armada_check = Check(have_smallest_fleet)
-    defend_action = Action(defend)
-    defend_sequence.child_nodes = [lesser_armada_check, defend_action]
+    # works, fails when adding to root nodes
+    spread_production = Sequence(name='Spread Production Strategy')
+    neutral_planet_check_prod = Check(if_neutral_planet_available)
+    spread__production_action = Action(spread_production)
+    spread_production.child_nodes = [neutral_planet_check_prod, spread__production_action]
     
     offensive_plan = Sequence(name='Offensive Strategy')
     largest_fleet_check = Check(have_largest_fleet)
     attack = Action(attack_weakest_enemy_planet)
     offensive_plan.child_nodes = [largest_fleet_check, attack]
 
-    # 
-    root.child_nodes = [spread_production_sequence, offensive_plan, attack.copy()]
-    
-    #root.child_nodes = [spread_sequence, spread_production_sequence, offensive_plan, attack.copy()]
+    root.child_nodes = [spread_sequence, offensive_plan, attack.copy()]
 
     logging.info('\n' + root.tree_to_string())
     return root

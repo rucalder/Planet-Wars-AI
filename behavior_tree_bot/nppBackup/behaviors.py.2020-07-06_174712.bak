@@ -42,17 +42,6 @@ def spread_to_weakest_neutral_planet(state):
     try:
         my_planet = next(my_planets)
         target_planet = next(target_planets)
-        target_to_distance = {}             #Dictionary mapping targets to closest distance
-        ally_to_target = {}                 #Dictionary mapping allies to their closest targets
-        for ally in state.my_planets():
-            closest_distance = 99999
-            for target in state.not_my_planets():
-                ally_to_target_distance = state.distance(ally.ID,target.ID)
-                if ally not in ally_to_target or ally_to_target_distance < closest_distance:
-                    ally_to_target[ally] = target
-                    closest_distance = ally_to_target_distance
-
-        target_planet = ally_to_target[my_planet]       
         while True:
             required_ships = target_planet.num_ships + 1
 
@@ -77,17 +66,6 @@ def spread_production(state):
     try:
         my_planet = next(my_planets)
         target_planet = next(target_planets)
-        target_to_distance = {}             #Dictionary mapping targets to closest distance
-        ally_to_target = {}                 #Dictionary mapping allies to their closest targets
-        for ally in state.my_planets():
-            closest_distance = 99999
-            for target in state.not_my_planets():
-                ally_to_target_distance = state.distance(ally.ID,target.ID)
-                if ally not in ally_to_target or ally_to_target_distance < closest_distance:
-                    ally_to_target[ally] = target
-                    closest_distance = ally_to_target_distance
-
-        target_planet = ally_to_target[my_planet]       
         while True:
             if target_planet.owner == 0:
                 required_ships = target_planet.num_ships + 1
@@ -146,3 +124,10 @@ def defend(state):
     except StopIteration:
         return
         
+def closest_neutral(state):
+    my_planets_sorted = iter(sorted(state.my_planets(), key=lambda p: p.num_ships))
+    iter_mine = iter(my_planets_sorted)
+    neutral_planets = iter(sorted(state.neutral_planets(), key=lambda p: p.num_ships))
+    neutral_planets.sort(key=lambda p: p.num_ships)
+    target_p = iter(neutral_planets)
+    closest_dist = state
